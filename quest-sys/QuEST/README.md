@@ -1,207 +1,290 @@
+<!-- 
+  QuEST README page and doxygen-doc mainpage.
 
-<!-- This README avoids relative paths since it is also used as Doxygen's mainpage -->
+  Because this file doubles as the doxygen mainpage, it must use absolute paths.
 
-<!-- banner -->
-[<img src="https://github.com/QuEST-Kit/QuEST/blob/master/doxyconfig/banner.png?raw=true" alt="The QuEST logo" width=500>](https://quest.qtechtheory.org)
-
-
-<!-- temporarily hiding Github Actions badges (pending aesthetic customisation)
-    [![Ubuntu unit](https://github.com/QuEST-Kit/QuEST/workflows/Ubuntu%20unit/badge.svg?branch=develop)](https://github.com/QuEST-Kit/QuEST/actions)
-    [![macOS unit](https://github.com/QuEST-Kit/QuEST/workflows/macOS%20unit/badge.svg)](https://github.com/QuEST-Kit/QuEST/actions)
-    [![LLVM](https://github.com/QuEST-Kit/QuEST/workflows/LLVM%20asan/badge.svg)](https://github.com/QuEST-Kit/QuEST/actions)
- -->
-<!-- temporarily hiding incorrect coverage statistics 
-(currently only considers serial CPU; needs also GPU and distributed test contributions)
-    [![codecov](https://codecov.io/gh/QuEST-Kit/QuEST/branch/develop/graph/badge.svg)](https://codecov.io/gh/QuEST-Kit/QuEST)
+  @author Tyson Jones
 -->
 
 
+<!-- banner and top badges (centered) -->
+<div align="center">
 
-<!-- action-badges has broken and is incorrectly showing build failure. 
-     temporarily forcing badge to show the correct pass while replacement is sought 
-     (that isn't Github's hideous default CI badge)
-     [![unit tests](https://action-badges.now.sh/QuEST-Kit/QuEST)](https://github.com/QuEST-Kit/QuEST/actions) 
---> 
-[![GitHub release](https://img.shields.io/github/release/QuEST-Kit/QuEST)](https://GitHub.com/QuEST-Kit/QuEST/releases/) 
-[![Doc](https://img.shields.io/badge/doc-Github.io-orange.svg)](https://quest-kit.github.io/QuEST/modules.html)
-[![unit tests](https://img.shields.io/badge/build-passing-green.svg)](https://github.com/QuEST-Kit/QuEST/actions)  <!-- forgive my sins (see above) -->
-[![MIT license](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENCE.txt)
+  <!-- banner -->
+  <a href="https://quest.qtechtheory.org">
+    <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/main/utils/docs/logos/banner.png" alt="The QuEST logo" width=400>
+  </a>
+
+  <!-- TODO: restore CI 'compilation/test pass' badge! -->
+  [![DOI](https://img.shields.io/badge/DOI-10.1038%2Fs41598--019--47174--9-yellow.svg)](https://doi.org/10.1038/s41598-019-47174-9)
+  <br>
+  [![GitHub release](https://img.shields.io/github/release/QuEST-Kit/QuEST)](https://GitHub.com/QuEST-Kit/QuEST/releases/) 
+  [![Doc](https://img.shields.io/badge/doc-Github.io-orange.svg)](https://quest-kit.github.io/QuEST/modules.html)
+  [![MIT license](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENCE.txt)
 
 
-The **Quantum Exact Simulation Toolkit** is a high performance simulator of quantum circuits, state-vectors and density matrices. QuEST uses **multithreading**, **GPU acceleration** and **distribution** to run lightning first on laptops, desktops and networked supercomputers. 
-QuEST *just works*; it is stand-alone, requires no installation, and is trivial to compile and run. 
-QuEST hybridises [OpenMP](https://www.openmp.org/) and [MPI](https://www.mpi-forum.org/) with _huge_ compiler support to run on all sorts of multicore, multi-CPU and distributed hardware, uses [HIP](https://docs.amd.com/bundle/HIP-Programming-Guide-v5.3) to run on AMD GPUs, integrates [cuQuantum](https://developer.nvidia.com/cuquantum-sdk) and [Thrust](https://developer.nvidia.com/thrust) for cutting-edge performance on modern NVIDIA GPUs, and has a custom kernel backend to run on older CUDA-compatible GPUs. 
-And it hides these deployment modes behind a single, seamless interface.
+</div>
 
-[![Languages](https://img.shields.io/badge/C-99-ff69b4.svg)](http://www.open-std.org/jtc1/sc22/wg14/www/standards.html#9899)
-[![Languages](https://img.shields.io/badge/C++-11-ff69b4.svg)](https://isocpp.org/wiki/faq/cpp11)
-![OS](https://img.shields.io/badge/os-MacOS-9cbd3c.svg)
-![OS](https://img.shields.io/badge/os-Linux-9cbd3c.svg)
-![OS](https://img.shields.io/badge/os-Windows-9cbd3c.svg)
-[![Platforms](https://img.shields.io/badge/multithreaded-OpenMP-6699ff.svg)](https://www.openmp.org/)
-[![Platforms](https://img.shields.io/badge/distributed-MPI-6699ff.svg)](https://www.mpi-forum.org/) 
-[![Platforms](https://img.shields.io/badge/GPU-CUDA-6699ff.svg)](https://developer.nvidia.com/cuda-zone)
-[![Platforms](https://img.shields.io/badge/GPU-AMD-6699ff.svg)](https://docs.amd.com/bundle/HIP-Programming-Guide-v5.3)
-[![Platforms](https://img.shields.io/badge/GPU-cuQuantum-6699ff.svg)](https://developer.nvidia.com/cuquantum-sdk)
 
-QuEST is developed by the [QTechTheory](http://qtechtheory.org/) group at the University of Oxford, and [these authors](https://github.com/QuEST-Kit/QuEST/blob/master/AUTHORS.txt). To learn more:
-- see the [tutorial](https://github.com/QuEST-Kit/QuEST/blob/master/examples/README.md)
-- view the [documentation](https://quest-kit.github.io/QuEST/modules.html)
+
+<!-- intro -->
+
+> [!NOTE]
+> QuEST `v4` has been released which re-designed QuEST from the ground up. Read about the exciting new features [here](docs/v4.md).
+
+The **Quantum Exact Simulation Toolkit** (QuEST) is a high-performance simulator of quantum statevectors and density matrices.
+It hybridises **multithreading**, **GPU acceleration** and **distribution** to run lightning fast on laptops, desktops and 
+supercomputers, parallelising over multiple cores, CPUs and GPUs. Behind the scenes, QuEST leverages [OpenMP](https://www.openmp.org/),
+[MPI](https://www.mpi-forum.org/), [CUDA](https://developer.nvidia.com/cuda-zone), [HIP](https://rocm.docs.amd.com/projects/HIP/en/docs-develop/what_is_hip.html),
+[Thrust](https://developer.nvidia.com/thrust), [cuQuantum](https://developer.nvidia.com/cuquantum-sdk) and [GPUDirect](https://developer.nvidia.com/gpudirect)
+for cutting-edge performance on modern multi-GPU clusters, and compatibility with older NVIDIA and AMD GPUs. These deployments can 
+be combined in any combination, or automatically decided at runtime, yet are abstracted behind a single, seamless interface, accessible 
+by both `C` and `C++` and all the major compilers (detailed [here](docs/compilers.md)).
+
+
+<!-- detail badgets (centered) -->
+
+<div align="center">
+
+  [![Languages](https://img.shields.io/badge/C-11-ff69b4.svg)](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3631.pdf)
+  [![Languages](https://img.shields.io/badge/C++-14-ff69b4.svg)](https://isocpp.org/wiki/faq/cpp14)
+  ![OS](https://img.shields.io/badge/os-MacOS-9cbd3c.svg)
+  ![OS](https://img.shields.io/badge/os-Linux-9cbd3c.svg)
+  ![OS](https://img.shields.io/badge/os-Windows-9cbd3c.svg) <br>
+  [![Platforms](https://img.shields.io/badge/multithreaded-OpenMP-6699ff.svg)](https://www.openmp.org/)
+  [![Platforms](https://img.shields.io/badge/distributed-MPI-6699ff.svg)](https://www.mpi-forum.org/) 
+  [![Platforms](https://img.shields.io/badge/GPU-CUDA-6699ff.svg)](https://developer.nvidia.com/cuda-zone)
+  [![Platforms](https://img.shields.io/badge/GPU-AMD-6699ff.svg)](https://docs.amd.com/bundle/HIP-Programming-Guide-v5.3)
+
+</div>
+
+
+QuEST development is led by the [QTechTheory](http://qtechtheory.org/) group at the University of Oxford, with active contributions from the [EPCC](https://www.epcc.ed.ac.uk/) team at the University of Edinburgh, and support from the below organisations.
+In particular, QuEST `v4` was made possible through the support of the UK National Quantum Computing centre (_NQCC200921_) and the [UKRI SEEQA](https://gtr.ukri.org/projects?ref=EP%2FY004655%2F1#/tabOverview) project.
+
+<div align="center">
+
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/main/utils/docs/logos/nqcc.png" alt="NQCC" height=30> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/main/utils/docs/logos/amd.png" alt="AMD" height=25> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/main/utils/docs/logos/nvidia.png" alt="NVIDIA" height=25> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/main/utils/docs/logos/qmt.png" alt="Quantum Motion" height=25> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/main/utils/docs/logos/edinburgh.png" alt="University of Edinburgh" height=25> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/main/utils/docs/logos/oxford.png" alt="University of Oxford" height=28> &nbsp;
+
+</div>
+
+
+<!-- <a> used below for doxygen compatibility -->
+
+To learn more:
+- view the <a href="#main_documentation">documentation</a>
 - visit the [website](https://quest.qtechtheory.org/)
-- see some [examples](https://github.com/QuEST-Kit/QuEST/blob/master/examples/)
 - read the [whitepaper](https://www.nature.com/articles/s41598-019-47174-9), which featured in Scientific Report's [Top 100 in Physics](https://www.nature.com/collections/ecehgdfcba/) :trophy:
 
-[![DOI](https://img.shields.io/badge/DOI-10.1038%2Fs41598--019--47174--9-yellow.svg)](https://doi.org/10.1038/s41598-019-47174-9)
-[![Email](https://img.shields.io/badge/email-quest@materials.ox.ac.uk-red.svg)](mailto:quest@materials.ox.ac.uk)
+
 
 ---------------------------------
 
 
-## :tada:&nbsp; Introduction
+<!-- BEWARE that we use two non-breaking spaces after each emoji in
+     a section title, to add spacing between emoji and text -->
 
-QuEST has a simple interface, which is agnostic to its runtime environment, between CPUs, GPUs and over networks.
-```C
-hadamard(qubits, 0);
+## 🎉  Introduction
 
-controlledRotateX(qubits, 0, 1, angle);
+QuEST has a simple interface which is agnostic to whether it's running on CPUs, GPUs or a networked supercomputer.
+```cpp
+Qureg qureg = createQureg(30);
+initRandomPureState(qureg);
 
-double prob = calcProbOfOutcome(qubits, 0, outcome);
+applyHadamard(qureg, 0);
+applyControlledRotateX(qureg, 0, 1, angle);
+applyFullQuantumFourierTransform(qureg);
+
+reportQureg(qureg);
+
+qreal prob  = calcProbOfQubitOutcome(qureg, 0, outcome);
+qreal expec = calcExpecPauliStr(qureg, getPauliStr("XYZ"));
 ```
 Yet, it is flexible
-```C
-Vector v;
-v.x = 1; v.y = .5; v.z = 0;
-rotateAroundAxis(qubits, 0, angle, v);
+```cpp
+mixDepolarising(qureg, targ, prob);
+mixKrausMap(qureg, targs, ntargs, krausmap);
 
-ComplexMatrix2 u = {
-    .real = {{.5, .5}, { .5,.5}},
-    .imag = {{.5,-.5}, {-.5,.5}}};
-unitary(qubits, 0, u);
+applyQubitMeasurement(qureg, targ);
+applyMultiQubitProjector(qureg, targs, outcomes, ntargs);
 
-mixDepolarising(qubits, 0, prob);
+applyControlledPauliGadget(qureg, ctrl, paulistr, angle);
+applyMultiStateControlledSwap(qureg, ctrls, states, nctrls, targ1, targ2);
+
+multiplyCompMatr1(qureg, targ, getInlineCompMatr1( {{1,2i},{3i,4}} ));
+multiplyDiagMatrPower(qureg, targs, ntargs, diagmatr, exponent);
 ```
 and extremely powerful
-```C
-ComplexMatrixN u = createComplexMatrixN(5);
-int ctrls[] = {0, 1, 2};
-int targs[] = {5, 20, 15, 10, 25};
-multiControlledMultiQubitUnitary(qubits, ctrls, 3, targs, 5, u);
+```cpp
+setFullStateDiagMatrFromMultiVarFunc(fullmatr, myfunc, ntargsPerVar, nvars);
+applyFullStateDiagMatrPower(qureg, fullmatr, exponent);
 
-ComplexMatrixN k1, k2, k3 = ...
-mixMultiQubitKrausMap(qubits, targs, 5, {k1, k2, k3}, 3);
+CompMatr matr = createCompMatr(10);
+setCompMatr(matr, ...);
+applyCompMatr(qureg, targs, 10, matr);
 
-double val = calcExpecPauliHamil(qubits, hamiltonian, workspace);
+PauliStrSum observ = createInlinePauliStrSum(R"(
+    0.123 XXIXX
+    1.23i XYZXZ
+    -1-6i IIZII
+)");
+applyTrotterizedPauliStrSumGadget(qureg, observ, time, order, nreps);
 
-applyTrotterCircuit(qubits, hamiltonian, time, order, repetitions);
+Qureg reduce = calcPartialTrace(qureg, targs, ntargs);
+qreal expec1 = calcExpecPauliStrSum(reduce, observ);
+qreal expec2 = calcExpecFullStateDiagMatr(qureg, fullmatr);
 ```
 
 ---------------------------------
 
-## :white_check_mark:&nbsp; Features 
+## ✅  Features 
+
+<!-- BEWARE that a bug in Doxygen v1.13.2 (github.com/doxygen/doxygen/issues/11515)
+     means we cannot immediately follow a non-breaking space (inserted below after
+     each emoji to effect spacing) with markdown syntax like **. Instead, we insert
+     one final regular/non-breaking space before ** which isn't rendered, and which
+     works around the bug -->
+
 QuEST supports:  
-- :ballot_box_with_check: &nbsp; **density matrices** for precise simulation of noisy quantum computers  
-- :ballot_box_with_check: &nbsp; **general unitaries** with any number of control and target qubits  
-- :ballot_box_with_check: &nbsp; **general decoherence channels** of any dimension  
-- :ballot_box_with_check: &nbsp; **general Hermitian operators** in the Pauli basis  
-- :ballot_box_with_check: &nbsp; **many *many* operators**, including even [Pauli gadgets](https://quest-kit.github.io/QuEST-develop-doc/group__unitary.html#ga34aa4865c92f9aa5d898c91286c9eca5), [analytic phase functions](https://quest-kit.github.io/QuEST-develop-doc/group__operator.html#ga467f517abd18dbc3d6fced84c6589161) and [Trotter circuits](https://quest-kit.github.io/QuEST-develop-doc/group__operator.html#ga35b6321c578a8c69470132b5ee95f930)  
-- :ballot_box_with_check: &nbsp; **many tools to analyse** quantum states, such as calculations of [probability](https://quest-kit.github.io/QuEST-develop-doc/group__calc.html#gad0cc08d52cad5062553d6f78126780cc), [fidelity](https://quest-kit.github.io/QuEST-develop-doc/group__calc.html#gaa266ed6c8ae5d0d0f49e1ac50819cffc), and [expected value](https://quest-kit.github.io/QuEST-develop-doc/group__calc.html#ga82f17e96a4cb7612fb9c6ef856df3810)  
-- :ballot_box_with_check: &nbsp; **variable precision** through a `qreal` numerical type which can use single, double or quad precision  
-- :ballot_box_with_check: &nbsp; **QASM output** to verify simulated circuits  
-- :ballot_box_with_check: &nbsp; **direct access to amplitudes** for rapid custom modification of the quantum state 
-- :ballot_box_with_check: &nbsp; **native compilation** on MacOS, Linux and Windows, through Clang, GNU, Intel, and MSVC compilers
+- ☑️   **density matrices** for precise simulation of noisy quantum computers  
+- ☑️   **general unitaries** with any number of control, control-states, and target qubits  
+- ☑️   **general decoherence channels** of any dimension  
+- ☑️   **general observables** in the Pauli or diagonal-Z bases  
+- ☑️   **many *many* operators**, including Pauli gadgets, trotterised time evolutions, and projectors
+- ☑️   **many tools to analyse** quantum states, such as calculations of probability, fidelity, expectation value, distances and partial traces
+- ☑️   **variable precision** through `qreal` and `qcomp` numerical types which can use single, double or quad precision  
+- ☑️   **direct access to amplitudes** for rapid custom modification of the quantum state 
+- ☑️   **native compilation** on MacOS, Linux and Windows, through Clang, GNU, Intel, and MSVC compilers
+- ☑️   **hybridisation** of multithreading, GPU-acceleration, distribution and GPU-distribution
+- ☑️   **optimisation** using NVLink'd GPUs, cuQuantum, and CUDA-aware MPI
+- ☑️   **automatic deployment** of a `Qureg` to the optimal hardware at runtime
+- ☑️   **hardware probing** to determine how many qubits can be simulated at runtime
+- ☑️   **bespoke algorithms** to optimally simulate a wide variety of esoteric operations
 
 ---------------------------------
 
-## :book:&nbsp; Documentation
+<!-- permit doxygen to reference section -->
+<a id="main_documentation"></a>
 
-- The [tutorial](/examples/README.md) includes instructions for
-  - [compiling](/examples/README.md#compiling) QuEST
-  - [running](/examples/README.md#running) QuEST locally and on supercomputers
-  - [testing](/examples/README.md#testing) QuEST using the comprehensive [unit tests](https://quest-kit.github.io/QuEST/group__unittest.html)
-  <br><br>
-- The [documentation](https://quest-kit.github.io/QuEST/modules.html) is divided into the following modules (collated [here](https://quest-kit.github.io/QuEST/QuEST_8h.html))
-  - [data structures](https://quest-kit.github.io/QuEST/group__type.html)
-  - [initialisations](https://quest-kit.github.io/QuEST/group__init.html)
-  - [unitaries](https://quest-kit.github.io/QuEST/group__unitary.html)
-  - [gates](https://quest-kit.github.io/QuEST/group__normgate.html)
+## 📖  Documentation
+
+> [!IMPORTANT]
+> QuEST v4's documentation is still under construction!
+
+Visit the [docs](docs/README.md) for guides and tutorials, or the [API](https://quest-kit.github.io/QuEST/group__api.html) which is divided into:
+  - [calculations](https://quest-kit.github.io/QuEST/group__calculations.html)
+  - [channels](https://quest-kit.github.io/QuEST/group__channels.html)
+  - [debug](https://quest-kit.github.io/QuEST/group__debug.html)
   - [decoherence](https://quest-kit.github.io/QuEST/group__decoherence.html)
-  - [operators](https://quest-kit.github.io/QuEST/group__operator.html)
-  - [calculations](https://quest-kit.github.io/QuEST/group__calc.html)
-  - [QASM](https://quest-kit.github.io/QuEST/group__qasm.html)
-  <br><br>
-- Additional utilities for debugging and testing are documented below
-  - [debugging](https://quest-kit.github.io/QuEST/group__debug.html)
-  - [unit tests](https://quest-kit.github.io/QuEST/group__unittest.html)
-  - [testing utilities](https://quest-kit.github.io/QuEST/group__testutilities.html)
+  - [environment](https://quest-kit.github.io/QuEST/group__environment.html)
+  - [initialisations](https://quest-kit.github.io/QuEST/group__initialisations.html)
+  - [matrices](https://quest-kit.github.io/QuEST/group__matrices.html)
+  - [modes](https://quest-kit.github.io/QuEST/group__modes.html)
+  - [operations](https://quest-kit.github.io/QuEST/group__operations.html)
+  - [paulis](https://quest-kit.github.io/QuEST/group__paulis.html)
+  - [precision](https://quest-kit.github.io/QuEST/group__precision.html)
+  - [qureg](https://quest-kit.github.io/QuEST/group__qureg.html)
+  - [types](https://quest-kit.github.io/QuEST/group__types.html)
+  - [tests](https://quest-kit.github.io/QuEST/group__tests.html)
 
-
-> **For developers**: QuEST's doc is automatically regenerated when the `master` branch is updated via [Github Actions](https://github.com/features/actions). To locally regenerate the doc, run `doxygen doxyconfig/config` in the root directory, which generates html documentation in `Doxygen_doc/html`.
+<!-- hiding test doc since too large, but preserved here for useful links -->
+<!--
+You can also browse QuEST's extensive [tests](https://quest-kit.github.io/QuEST/group__tests.html):
+  - [test utilities](https://quest-kit.github.io/QuEST/group__testutils.html)
+    - [cache](https://quest-kit.github.io/QuEST/group__testutilscache.html)
+    - [compare](https://quest-kit.github.io/QuEST/group__testutilscompare.html)
+    - [convert](https://quest-kit.github.io/QuEST/group__testutilsconvert.html)
+    - [evolve](https://quest-kit.github.io/QuEST/group__testutilsevolve.html)
+    - [linalg](https://quest-kit.github.io/QuEST/group__testutilslinalg.html)
+    - [lists](https://quest-kit.github.io/QuEST/group__testutilslists.html)
+    - [macros](https://quest-kit.github.io/QuEST/group__testutilsmacros.html)
+    - [measure](https://quest-kit.github.io/QuEST/group__testutilsmeasure.html)
+    - [qmatrix](https://quest-kit.github.io/QuEST/group__testutilsqmatrix.html)
+    - [qvector](https://quest-kit.github.io/QuEST/group__testutilsqvector.html)
+    - [random](https://quest-kit.github.io/QuEST/group__testutilsrandom.html)
+  - [unit tests](https://quest-kit.github.io/QuEST/group__unittests.html)
+    - [calculations](https://quest-kit.github.io/QuEST/group__unitcalcs.html)
+    - [channels](https://quest-kit.github.io/QuEST/group__unitchannels.html)
+    - [debug](https://quest-kit.github.io/QuEST/group__unitdebug.html)
+    - [decoherence](https://quest-kit.github.io/QuEST/group__unitdeco.html)
+    - [environment](https://quest-kit.github.io/QuEST/group__unitenv.html)
+    - [initialisations](https://quest-kit.github.io/QuEST/group__unitinit.html)
+    - [matrices](https://quest-kit.github.io/QuEST/group__unitmatr.html)
+    - [operations](https://quest-kit.github.io/QuEST/group__unitops.html)
+    - [paulis](https://quest-kit.github.io/QuEST/group__unitpaulis.html)
+    - [qureg](https://quest-kit.github.io/QuEST/group__unitqureg.html)
+    - [types](https://quest-kit.github.io/QuEST/group__unittypes.html)
+  - [integration tests](https://quest-kit.github.io/QuEST/group__integrationtests.html)
+  - [deprecated tests](https://quest-kit.github.io/QuEST/group__deprecatedtests.html)
+  - [deprecated test utilities](https://quest-kit.github.io/QuEST/group__deprecatedutils.html)
+-->
 
 ---------------------------------
 
-## :rocket:&nbsp; Getting started 
+## 🚀  Getting started 
 
 To rocket right in, download QuEST with [git](https://git-scm.com/) at the terminal
 ```bash
 git clone https://github.com/quest-kit/QuEST.git
 cd QuEST
 ```
-Compile the [tutorial](/examples/README.md) example ([source](/examples/tutorial_example.c)) using [cmake](https://cmake.org/) and [make](https://www.gnu.org/software/make/)
+We recommend working in a `build` directory:
 ```bash
 mkdir build
 cd build
-cmake ..
+```
+
+Compile the [minimum example](/examples/tutorials/min_example.cpp) using [cmake](https://cmake.org/):
+```bash
+cmake .. 
 make
 ```
 then run it with
 ```bash
-./demo
+./min_example
 ```
-<br>
 
-> **Windows** users should install [Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019) for Visual Studio, and [CMake](https://cmake.org/download/), and run the above commmands in the *Developer Command Prompt for VS*, though using build commands
-> ```bash 
-> cmake .. -G "NMake Makefiles"
-> nmake
-> ```
-> If using MSVC and NMake in this way fails, users can forego GPU acceleration, download
-> [MinGW-w64](https://sourceforge.net/projects/mingw-w64/), and compile via 
-> ```bash 
-> cmake .. -G "MinGW Makefiles"
-> make
-> ```
-
-
-
+See the [docs](docs/README.md) for enabling acceleration and running the unit tests.
 
 ---------------------------------
 
-## :heart:&nbsp; Acknowledgements
+## ❤  Acknowledgements
 
-We sincerely thank the following external contributors to QuEST.
+In addition to QuEST's [authors](AUTHORS.txt), we sincerely thank the following external contributors to QuEST.
 
 - [Jakub Adamski](https://github.com/jjacobx) for optimising distributed communication of max-size messages.
-- [Bruno Villasenor Alvarez](https://github.com/bvillasen) of [AMD](https://www.amd.com/en.html) for porting the GPU backend to [HIP](https://github.com/ROCm-Developer-Tools/HIP), for compatibility with AMD GPUs.
-- [HQS Quantum simulations](https://quantumsimulations.de/) for contributing `mixDamping` on CPU.
-- [Kshitij Chhabra](https://github.com/kshitijc) for patching some validation bugs.
-- [Drew Silcock](https://github.com/drewsilcock) for patching the multithreaded build on MacOS.
-- [Zach van Rijn](https://github.com/zv-io) for patching the multithreading code for GCC-9 OpenMP-5 compatibility.
-- [SchineCompton](https://github.com/SchineCompton) for patching the GPU CMake release build.
-- [Christopher J. Anders](https://github.com/chr5tphr) for patching the multithreading (when default off) and GPU builds (revising min cmake).
-- [Gleb Struchalin](https://github.com/glebx-f) for patching the cmake standalone build.
-- [Milos Prokop](https://github.com/Milos9304) for serial prototyping of `initDiagonalOpFromPauliHamil`.
+- [Bruno Villasenor Alvarez](https://github.com/bvillasen) of [AMD](https://www.amd.com/en.html) for porting the v3 GPU backend to [HIP](https://github.com/ROCm-Developer-Tools/HIP), for compatibility with AMD GPUs.
+- [HQS Quantum simulations](https://quantumsimulations.de/) for prototyping v3 `mixDamping`.
+- [Kshitij Chhabra](https://github.com/kshitijc) for patching some v3 validation bugs.
+- [Drew Silcock](https://github.com/drewsilcock) for patching the v3 multithreaded build on MacOS.
+- [Zach van Rijn](https://github.com/zv-io) for patching the v3 multithreading code for GCC-9 OpenMP-5 compatibility.
+- [SchineCompton](https://github.com/SchineCompton) for patching the v3 GPU CMake release build.
+- [Christopher J. Anders](https://github.com/chr5tphr) for patching the v3 multithreading (when default off) and GPU builds (revising min cmake).
+- [Gleb Struchalin](https://github.com/glebx-f) for patching the v3 cmake standalone build.
+- [Milos Prokop](https://github.com/Milos9304) for serial prototyping of v3's `initDiagonalOpFromPauliHamil`.
 
-QuEST uses the [mt19937ar](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html) Mersenne Twister algorithm for random number generation, under the BSD licence. QuEST optionally (by additionally importing `QuEST_complex.h`) integrates the [language agnostic complex type](http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/CUJ/2003/0303/cuj0303meyers/index.htm) by Randy Meyers and Dr. Thomas Plum
+
 
 ---------------------------------
 
-## :newspaper:&nbsp; Related projects
+## 📰  Related projects
 
 - [QuESTlink](https://questlink.qtechtheory.org)   <br>
   a Mathematica package enabling symbolic circuit manipulation, analytic simulation, visualisation and high performance simulation with remote accelerated hardware.
   
-- [pyQuEST](https://github.com/rrmeister/pyQuEST/tree/master)   <br>
-  a python interface to QuEST, based on Cython, developed within the [QTechTheory](https://qtechtheory.org) group. Please note, pyQuEST is currently in the alpha stage.
+- [pyQuEST](https://github.com/rrmeister/pyQuEST)   <br>
+  a python interface to QuEST, based on Cython, developed by [Richard Meister](https://github.com/rrmeister) within the [QTechTheory](https://qtechtheory.org) group.
+
+- [QuEST.jl](https://github.com/ediparquantum/QuEST.jl) <br>
+  a Julia interface to QuEST, developed by [Jonathan Miller](https://github.com/fieldofnodes).
+
+- [qoqo-quest](https://github.com/HQSquantumsimulations/qoqo-quest) <br>
+  a Rust interface to QuEST, developed by [HQS Quantum Simulations](https://quantumsimulations.de/).
    
 - [PyQuEST-cffi](https://github.com/HQSquantumsimulations/PyQuEST-cffi)   <br>
-  a python interface to QuEST based on cffi developed by HQS Quantum Simulations. Please note, PyQuEST-cffi is currently in the alpha stage and not an official QuEST project.
+  a python interface to QuEST developed by [HQS Quantum Simulations](https://quantumsimulations.de/). 
