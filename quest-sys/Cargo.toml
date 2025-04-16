@@ -37,6 +37,7 @@ openmp-sys = { version = "~1.2", features = ["static"], optional = true }
 # cmake = {version ="0.1", features=[]}
 bindgen = { version = "0.69", optional = true }
 cc = { version = "1.0" }
+cmake = "0.1"
 
 [features]
 default = []

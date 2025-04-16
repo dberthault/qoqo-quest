@@ -7,8 +7,11 @@ fn main() {
     let out_dir_path = PathBuf::from(env::var("OUT_DIR").expect("Cannot find OUT_DIR"));
     #[cfg(feature = "rebuild")]
     let out_dir_path_rebuild = out_dir_path.clone();
-    let quest_library_path = build_with_cc(out_dir_path);
+    eprintln!("!!!! AAAAAAA !!!!");
 
+    let quest_library_path = build_with_cmake(out_dir_path);
+
+    println!("{:?}", quest_library_path.display());
     println!(
         "cargo:rustc-link-search=native={}",
         quest_library_path.display()
@@ -67,16 +70,30 @@ fn main() {
         .expect("Couldn't write bindings!");
 }
 
+fn build_with_cmake(out_dir: PathBuf) -> PathBuf {
+    let base_path = Path::new("QuEST");
+    let out_path = out_dir.join("build");
+
+    let dst = cmake::Config::new(base_path)
+        .out_dir(out_path)
+        .define("ENABLE_CUDA", "OFF")
+        .define("ENABLE_CUQUANTUM", "OFF")
+        .define("CMAKE_CUDA_FLAGS", "--allow-unsupported-compiler")
+        .build();
+
+    dst.join("lib")
+}
+
 fn build_with_cc(out_dir: PathBuf) -> PathBuf {
     let base_path = Path::new("QuEST").join("QuEST");
     let src_path = base_path.join("src");
     let include_path = base_path.join("include");
     let mut files = vec![
         src_path.join("QuEST.c"),
-        src_path.join("QuEST_common.c"),
-        src_path.join("QuEST_qasm.c"),
-        src_path.join("QuEST_validation.c"),
-        src_path.join("mt19937ar.c"),
+        // src_path.join("QuEST_common.c"),
+        // src_path.join("QuEST_qasm.c"),
+        // src_path.join("QuEST_validation.c"),
+        // src_path.join("mt19937ar.c"),
     ];
     let out_path = out_dir.join("build");
     fs::create_dir_all(out_path.clone()).expect("Cannot create directory for x86_64 library");
