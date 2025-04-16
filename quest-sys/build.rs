@@ -7,16 +7,14 @@ fn main() {
     let out_dir_path = PathBuf::from(env::var("OUT_DIR").expect("Cannot find OUT_DIR"));
     #[cfg(feature = "rebuild")]
     let out_dir_path_rebuild = out_dir_path.clone();
-    eprintln!("!!!! AAAAAAA !!!!");
 
     let quest_library_path = build_with_cmake(out_dir_path);
 
-    println!("{:?}", quest_library_path.display());
     println!(
         "cargo:rustc-link-search=native={}",
         quest_library_path.display()
     );
-    println!("cargo:rustc-link-lib=static=QuEST");
+    println!("cargo:rustc-link-lib=dylib=QuEST");
     println!("cargo:rerun-if-changed=wrapper.h");
 
     // list functions for which bindings should be created
@@ -81,7 +79,7 @@ fn build_with_cmake(out_dir: PathBuf) -> PathBuf {
         .define("CMAKE_CUDA_FLAGS", "--allow-unsupported-compiler")
         .build();
 
-    dst.join("lib")
+    dst.join("build")
 }
 
 fn build_with_cc(out_dir: PathBuf) -> PathBuf {
