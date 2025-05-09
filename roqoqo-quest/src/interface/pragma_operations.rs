@@ -205,7 +205,11 @@ pub fn execute_pragma_set_state_vector(
             );
         }
         unsafe {
-            quest_sys::initStateFromAmps(qureg.quest_qureg, reals.as_mut_ptr(), imags.as_mut_ptr())
+            quest_sys::initArbitraryPureState(
+                qureg.quest_qureg,
+                reals.as_mut_ptr(),
+                imags.as_mut_ptr(),
+            )
         }
         Ok(())
     } else {
@@ -213,7 +217,7 @@ pub fn execute_pragma_set_state_vector(
         let mut reals: Vec<f64> = statevec.iter().map(|x| x.re).collect();
         let mut imags: Vec<f64> = statevec.iter().map(|x| x.im).collect();
         unsafe {
-            quest_sys::setAmps(
+            quest_sys::setQuregAmps(
                 qureg.quest_qureg,
                 startind,
                 reals.as_mut_ptr(),
@@ -254,7 +258,7 @@ pub fn execute_pragma_set_density_matrix(
         let number_amplitudes: ::std::os::raw::c_longlong =
             imags.len() as ::std::os::raw::c_longlong;
         unsafe {
-            quest_sys::setDensityAmps(
+            quest_sys::setDensityQuregAmps(
                 qureg.quest_qureg,
                 start_row,
                 start_column,
@@ -326,7 +330,7 @@ pub fn execute_pragma_random_noise(
         match choices[distribution.sample(&mut rng)] {
             1 => {
                 unsafe {
-                    quest_sys::pauliX(
+                    quest_sys::applyPauliX(
                         qureg.quest_qureg,
                         *operation.qubit() as ::std::os::raw::c_int,
                     )
@@ -335,7 +339,7 @@ pub fn execute_pragma_random_noise(
             }
             2 => {
                 unsafe {
-                    quest_sys::pauliY(
+                    quest_sys::applyPauliY(
                         qureg.quest_qureg,
                         *operation.qubit() as ::std::os::raw::c_int,
                     )
@@ -344,7 +348,7 @@ pub fn execute_pragma_random_noise(
             }
             3 => {
                 unsafe {
-                    quest_sys::pauliZ(
+                    quest_sys::applyPauliZ(
                         qureg.quest_qureg,
                         *operation.qubit() as ::std::os::raw::c_int,
                     )
@@ -452,7 +456,7 @@ pub fn execute_get_pauli_prod(
     let pp = if !op.circuit().is_empty() {
         let mut workspace = Qureg::new(qureg.number_qubits(), qureg.is_density_matrix);
         unsafe {
-            quest_sys::cloneQureg(workspace.quest_qureg, qureg.quest_qureg);
+            quest_sys::setQuregToClone(workspace.quest_qureg, qureg.quest_qureg);
         }
         crate::interface::call_circuit_with_device(
             op.circuit(),
@@ -464,12 +468,13 @@ pub fn execute_get_pauli_prod(
             device,
         )?;
         unsafe {
-            let pp = quest_sys::calcExpecPauliProd(
+            let pp = quest_sys::calcExpecPauliStr(
                 workspace.quest_qureg,
-                qubits.as_mut_ptr(),
-                paulis.as_mut_ptr(),
-                qubits.len() as i32,
-                workspace_pp.quest_qureg,
+                quest_sys::getPauliStr(
+                    paulis.as_mut_ptr(),
+                    qubits.as_mut_ptr(),
+                    qubits.len() as i32,
+                ),
             );
             drop(workspace);
             drop(workspace_pp);
@@ -477,12 +482,13 @@ pub fn execute_get_pauli_prod(
         }
     } else {
         unsafe {
-            let pp = quest_sys::calcExpecPauliProd(
+            let pp = quest_sys::calcExpecPauliStr(
                 qureg.quest_qureg,
-                qubits.as_mut_ptr(),
-                paulis.as_mut_ptr(),
-                qubits.len() as i32,
-                workspace_pp.quest_qureg,
+                quest_sys::getPauliStr(
+                    paulis.as_mut_ptr(),
+                    qubits.as_mut_ptr(),
+                    qubits.len() as i32,
+                ),
             );
             drop(workspace_pp);
             pp
@@ -517,7 +523,7 @@ pub fn execute_get_occupation_probability(
                 device,
             )?;
         }
-        quest_sys::cloneQureg(workspace.quest_qureg, qureg.quest_qureg);
+        quest_sys::setQuregToClone(workspace.quest_qureg, qureg.quest_qureg);
         let probas: Vec<f64>;
         if qureg.is_density_matrix {
             let op = PragmaGetDensityMatrix::new(op.readout().clone(), None);

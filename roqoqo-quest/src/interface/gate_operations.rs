@@ -21,15 +21,13 @@ pub fn execute_generic_single_qubit_operation(
     qureg: &mut Qureg,
 ) -> Result<(), RoqoqoBackendError> {
     let unitary_matrix = operation.unitary_matrix()?;
-    let complex_matrix = quest_sys::ComplexMatrix2 {
+    let complex_matrix = quest_sys::CompMatr1 {
         // row major version only used for Complex2/4/N intio
-        real: [
-            [unitary_matrix[(0, 0)].re, unitary_matrix[(0, 1)].re],
-            [unitary_matrix[(1, 0)].re, unitary_matrix[(1, 1)].re],
-        ],
-        imag: [
-            [unitary_matrix[(0, 0)].im, unitary_matrix[(0, 1)].im],
-            [unitary_matrix[(1, 0)].im, unitary_matrix[(1, 1)].im],
+        numQubits: qureg.number_qubits() as i32,
+        numRows: 2,
+        elems: [
+            [unitary_matrix[(0, 0)], unitary_matrix[(0, 1)]],
+            [unitary_matrix[(1, 0)], unitary_matrix[(1, 1)]],
         ],
         // column major version
         // real: [
@@ -41,7 +39,9 @@ pub fn execute_generic_single_qubit_operation(
         //     [unitary_matrix[(0, 1)].im, unitary_matrix[(1, 1)].im],
         // ],
     };
-    unsafe { quest_sys::unitary(qureg.quest_qureg, *operation.qubit() as i32, complex_matrix) };
+    unsafe {
+        quest_sys::applyCompMatr1(qureg.quest_qureg, *operation.qubit() as i32, complex_matrix)
+    };
     Ok(())
 }
 
@@ -64,7 +64,7 @@ pub fn execute_generic_three_qubit_operation(
         *operation.target() as i32,
     ];
     unsafe {
-        quest_sys::multiQubitUnitary(
+        quest_sys::applyCompMatr(
             qureg.quest_qureg,
             targets.as_mut_ptr(),
             3,
@@ -95,7 +95,7 @@ pub fn execute_generic_multi_qubit_operation(
         .map(|x| x as i32)
         .collect();
     unsafe {
-        quest_sys::multiQubitUnitary(
+        quest_sys::applyCompMatr(
             qureg.quest_qureg,
             targets.as_mut_ptr(),
             number_qubits,
@@ -110,58 +110,34 @@ pub fn execute_generic_two_qubit_operation(
     qureg: &mut Qureg,
 ) -> Result<(), RoqoqoBackendError> {
     let unitary_matrix = operation.unitary_matrix()?;
-    let complex_matrix = quest_sys::ComplexMatrix4 {
+    let complex_matrix = quest_sys::CompMatr2 {
+        numQubits: qureg.number_qubits() as i32,
+        numRows: 4,
         // row major version only used for Complex2/4/N intio
-        real: [
+        elems: [
             [
-                unitary_matrix[(0, 0)].re,
-                unitary_matrix[(0, 1)].re,
-                unitary_matrix[(0, 2)].re,
-                unitary_matrix[(0, 3)].re,
+                unitary_matrix[(0, 0)],
+                unitary_matrix[(0, 1)],
+                unitary_matrix[(0, 2)],
+                unitary_matrix[(0, 3)],
             ],
             [
-                unitary_matrix[(1, 0)].re,
-                unitary_matrix[(1, 1)].re,
-                unitary_matrix[(1, 2)].re,
-                unitary_matrix[(1, 3)].re,
+                unitary_matrix[(1, 0)],
+                unitary_matrix[(1, 1)],
+                unitary_matrix[(1, 2)],
+                unitary_matrix[(1, 3)],
             ],
             [
-                unitary_matrix[(2, 0)].re,
-                unitary_matrix[(2, 1)].re,
-                unitary_matrix[(2, 2)].re,
-                unitary_matrix[(2, 3)].re,
+                unitary_matrix[(2, 0)],
+                unitary_matrix[(2, 1)],
+                unitary_matrix[(2, 2)],
+                unitary_matrix[(2, 3)],
             ],
             [
-                unitary_matrix[(3, 0)].re,
-                unitary_matrix[(3, 1)].re,
-                unitary_matrix[(3, 2)].re,
-                unitary_matrix[(3, 3)].re,
-            ],
-        ],
-        imag: [
-            [
-                unitary_matrix[(0, 0)].im,
-                unitary_matrix[(0, 1)].im,
-                unitary_matrix[(0, 2)].im,
-                unitary_matrix[(0, 3)].im,
-            ],
-            [
-                unitary_matrix[(1, 0)].im,
-                unitary_matrix[(1, 1)].im,
-                unitary_matrix[(1, 2)].im,
-                unitary_matrix[(1, 3)].im,
-            ],
-            [
-                unitary_matrix[(2, 0)].im,
-                unitary_matrix[(2, 1)].im,
-                unitary_matrix[(2, 2)].im,
-                unitary_matrix[(2, 3)].im,
-            ],
-            [
-                unitary_matrix[(3, 0)].im,
-                unitary_matrix[(3, 1)].im,
-                unitary_matrix[(3, 2)].im,
-                unitary_matrix[(3, 3)].im,
+                unitary_matrix[(3, 0)],
+                unitary_matrix[(3, 1)],
+                unitary_matrix[(3, 2)],
+                unitary_matrix[(3, 3)],
             ],
         ],
         // column major version
@@ -219,7 +195,7 @@ pub fn execute_generic_two_qubit_operation(
         // ],
     };
     unsafe {
-        quest_sys::twoQubitUnitary(
+        quest_sys::applyCompMatr2(
             qureg.quest_qureg,
             *operation.target() as i32,
             *operation.control() as i32,
@@ -240,9 +216,11 @@ pub fn execute_generic_single_qubit_noise(
     }
     let number_qubits = qureg.number_qubits();
     let unitary_matrix = operation.superoperator()?;
-    let complex_matrix = quest_sys::ComplexMatrix4 {
+    let complex_matrix = quest_sys::CompMatr2 {
+        numQubits: number_qubits as i32,
+        numRows: 4,
         // Row major version
-        real: [
+        elems: [
             [
                 unitary_matrix[(0, 0)],
                 unitary_matrix[(0, 1)],
@@ -295,15 +273,9 @@ pub fn execute_generic_single_qubit_noise(
         //         unitary_matrix[(3, 3)],
         //     ],
         // ],
-        imag: [
-            [0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0],
-        ],
     };
     unsafe {
-        quest_sys::statevec_twoQubitUnitary(
+        quest_sys::applyCompMatr2(
             qureg.quest_qureg,
             *operation.qubit() as i32,
             *operation.qubit() as i32 + number_qubits as i32,

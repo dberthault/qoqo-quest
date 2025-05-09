@@ -234,8 +234,7 @@ impl Backend {
         let mut qureg = Qureg::new((number_used_qubits) as u32, is_density_matrix);
         if let Some(mut random_seed) = self.random_seed.clone() {
             unsafe {
-                quest_sys::seedQuEST(
-                    &mut qureg.quest_env,
+                quest_sys::setSeeds(
                     random_seed.as_mut_ptr() as *mut std::os::raw::c_ulong,
                     random_seed.len() as i32,
                 );

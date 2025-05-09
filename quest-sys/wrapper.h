@@ -1,1 +1,1 @@
-#include "QuEST/QuEST/include/QuEST.h"
+#include "QuEST/quest/include/quest.h"

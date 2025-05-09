@@ -40,7 +40,8 @@ impl Qureg {
     /// * `is_density_matrix` - Create a
     pub fn new(number_qubits: u32, is_density_matrix: bool) -> Self {
         unsafe {
-            let quest_env = quest_sys::createQuESTEnv();
+            quest_sys::initQuESTEnv();
+            let quest_env = quest_sys::getQuESTEnv();
             let quest_qureg = if is_density_matrix {
                 quest_sys::createDensityQureg(number_qubits as ::std::os::raw::c_int, quest_env)
             } else {
@@ -76,7 +77,7 @@ impl Qureg {
         let dimension: u32 = 2u32.pow(number_qubits);
         let mut probabilites: Vec<f64> = Vec::with_capacity(dimension as usize);
         unsafe {
-            quest_sys::copyStateFromGPU(self.quest_qureg);
+            quest_sys::syncQuregFromGpu(self.quest_qureg);
         }
         if self.is_density_matrix {
             for index in 0..dimension {
@@ -116,7 +117,7 @@ impl Qureg {
         let dimension: u32 = 2u32.pow(number_qubits);
         let mut statevector: Vec<Complex64> = Vec::with_capacity(dimension.try_into().unwrap());
         unsafe {
-            quest_sys::copyStateFromGPU(self.quest_qureg);
+            quest_sys::syncQuregFromGpu(self.quest_qureg);
         }
         if self.is_density_matrix {
             return Err(RoqoqoBackendError::GenericError {
@@ -149,7 +150,7 @@ impl Qureg {
         let number_qubits = self.number_qubits();
         let dimension: u32 = 2u32.pow(number_qubits);
         unsafe {
-            quest_sys::copyStateFromGPU(self.quest_qureg);
+            quest_sys::syncQuregFromGpu(self.quest_qureg);
         }
         let mut density_matrix_flattened_row_major: Vec<Complex64> =
             Vec::with_capacity(4_usize.pow(self.number_qubits()));
@@ -213,7 +214,7 @@ impl Drop for Qureg {
     fn drop(&mut self) {
         unsafe {
             quest_sys::destroyQureg(self.quest_qureg, self.quest_env);
-            quest_sys::destroyQuESTEnv(self.quest_env);
+            quest_sys::finalizeQuESTEnv(self.quest_env);
         }
     }
 }
@@ -225,7 +226,7 @@ impl Drop for Qureg {
 #[derive(Debug, Clone)]
 pub struct ComplexMatrixN {
     /// Internally stored C ComplexMatrix.
-    pub complex_matrix: quest_sys::ComplexMatrixN,
+    pub complex_matrix: quest_sys::CompMatr,
     /// The dimension of the complex matrix
     pub dimension: usize,
 }
@@ -240,7 +241,7 @@ impl ComplexMatrixN {
     /// * `number_qubits` - The number of qubits that determine the dimension of the matrix (2**number_qubits).
     pub fn new(number_qubits: u32) -> Self {
         unsafe {
-            let complex_matrix = quest_sys::createComplexMatrixN(number_qubits as i32);
+            let complex_matrix = quest_sys::createCompMatr(number_qubits as i32);
             let dimension = 2_usize.pow(number_qubits);
             ComplexMatrixN {
                 complex_matrix,
@@ -276,31 +277,7 @@ impl ComplexMatrixN {
 impl Drop for ComplexMatrixN {
     fn drop(&mut self) {
         unsafe {
-            quest_sys::destroyComplexMatrixN(self.complex_matrix);
+            quest_sys::destroyCompMatr(self.complex_matrix);
         }
-    }
-}
-
-/// Wrapper around a QuEST C Vector
-///
-/// ComplexMatrices are the internal QuEST data type for arbitrary size ComplexMatrices
-/// used in the simulation.
-#[derive(Debug, Clone)]
-pub struct Vector {
-    /// Internally stored C Vector.
-    pub vector: quest_sys::Vector,
-}
-
-impl Vector {
-    /// Creates a new Vector.
-    ///
-    /// QuEST internally uses ComplexMatrices of
-    ///
-    /// # Arguments
-    ///
-    /// * `number_qubits` - The number of qubits that determine the dimension of the matrix (2**number_qubits).
-    pub fn new(x: f64, y: f64, z: f64) -> Self {
-        let vector = quest_sys::Vector { x, y, z };
-        Vector { vector }
     }
 }

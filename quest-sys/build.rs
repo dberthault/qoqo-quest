@@ -15,12 +15,12 @@ fn main() {
         quest_library_path.display()
     );
     println!("cargo:rustc-link-lib=dylib=QuEST");
-    println!("cargo:rerun-if-changed=wrapper.h");
+    println!("cargo:rerun-if-changed=QuEST/quest/include/quest.h");
 
     // list functions for which bindings should be created
     #[cfg(feature = "rebuild")]
     let builder = bindgen::Builder::default()
-        .header("wrapper.h")
+        .header("QuEST/quest/include/quest.h")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .allowlist_function("copyStateFromGPU")
         .allowlist_function("copyStateToPU")
@@ -31,7 +31,7 @@ fn main() {
         .allowlist_function("get.*")
         .allowlist_function("set.*")
         .allowlist_function("setComplexMatrixN")
-        .allowlist_function("initStateFromAmps")
+        .allowlist_function("initArbitraryPureState")
         .allowlist_function("report.*")
         .allowlist_function("rotate.*")
         .allowlist_function("report.*")
@@ -56,11 +56,27 @@ fn main() {
         .allowlist_function("multiQubitUnitary")
         .allowlist_function("measure")
         .allowlist_function("statevec_twoQubitUnitary")
-        .allowlist_function("calc.*")
-        .allowlist_function("seedQuEST");
+        .allowlist_function("calc.*");
 
     #[cfg(feature = "rebuild")]
-    let bindings = builder.generate().expect("Unable to generate bindings");
+    let bindings = builder
+        .clang_arg("-IQuEST")
+        .clang_arg("-DCOMPILE_OPENMP=1")
+        .clang_arg("-DCOMPILE_MPI=0")
+        .clang_arg(format!(
+            "-DCOMPILE_CUDA={}",
+            if cfg!(feature = "cuda") { "1" } else { "0" }
+        ))
+        .clang_arg(format!(
+            "-DCOMPILE_CUQUANTUM={}",
+            if cfg!(feature = "cuquantum") {
+                "1"
+            } else {
+                "0"
+            }
+        ))
+        .generate()
+        .expect("Unable to generate bindings");
 
     #[cfg(feature = "rebuild")]
     bindings
@@ -72,22 +88,42 @@ fn build_with_cmake(out_dir: PathBuf) -> PathBuf {
     let base_path = Path::new("QuEST");
     let out_path = out_dir.join("build");
 
+    #[cfg(not(feature = "cuda"))]
+    #[cfg(not(feature = "cuquantum"))]
     let dst = cmake::Config::new(base_path)
-        .out_dir(out_path)
+        .out_dir(&out_path)
         .define("ENABLE_CUDA", "OFF")
         .define("ENABLE_CUQUANTUM", "OFF")
         .define("CMAKE_CUDA_FLAGS", "--allow-unsupported-compiler")
         .build();
 
+    #[cfg(feature = "cuda")]
+    let dst = if !cfg!(feature = "cuquantum") {
+        cmake::Config::new(base_path)
+            .out_dir(&out_path)
+            .define("ENABLE_CUDA", "ON")
+            .define("ENABLE_CUQUANTUM", "OFF")
+            .define("CMAKE_CUDA_FLAGS", "--allow-unsupported-compiler")
+            .build()
+    } else {
+        cmake::Config::new(base_path)
+            .out_dir(&out_path)
+            .define("ENABLE_CUDA", "ON")
+            .define("ENABLE_CUQUANTUM", "ON")
+            .define("CMAKE_CUDA_FLAGS", "--allow-unsupported-compiler")
+            .build()
+    };
+
     dst.join("build")
 }
 
 fn build_with_cc(out_dir: PathBuf) -> PathBuf {
-    let base_path = Path::new("QuEST").join("QuEST");
-    let src_path = base_path.join("src");
+    let base_path = Path::new("QuEST").join("quest");
+    let src_path = base_path.join("src").join("api");
     let include_path = base_path.join("include");
     let mut files = vec![
-        src_path.join("QuEST.c"),
+        src_path.join("qureg.cpp"),
+        src_path.join("qureg.cpp"),
         // src_path.join("QuEST_common.c"),
         // src_path.join("QuEST_qasm.c"),
         // src_path.join("QuEST_validation.c"),
