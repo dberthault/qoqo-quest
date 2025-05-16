@@ -267,6 +267,10 @@ extern "C" {
     pub fn reportQureg(qureg: Qureg);
 }
 extern "C" {
+    #[doc = " @notdoced\n @nottested"]
+    pub fn syncQuregFromGpu(qureg: Qureg);
+}
+extern "C" {
     #[doc = " @notdoced"]
     pub fn getQuregAmps(outAmps: *mut qcomp, qureg: Qureg, startInd: qindex, numAmps: qindex);
 }
@@ -1687,6 +1691,10 @@ extern "C" {
         useGpuAccel: ::std::os::raw::c_int,
         useMultithread: ::std::os::raw::c_int,
     );
+}
+extern "C" {
+    #[doc = " @notdoced"]
+    pub fn finalizeQuESTEnv();
 }
 extern "C" {
     #[doc = " @notdoced\n @nottested"]

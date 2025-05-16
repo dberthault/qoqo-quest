@@ -10,7 +10,7 @@
 // express or implied. See the License for the specific language governing permissions and
 // limitations under the License.
 
-use num_complex::Complex64;
+use num_complex::{Complex, Complex64};
 use roqoqo::RoqoqoBackendError;
 
 /// Wrapper around QuEST quantum register
@@ -43,9 +43,9 @@ impl Qureg {
             quest_sys::initQuESTEnv();
             let quest_env = quest_sys::getQuESTEnv();
             let quest_qureg = if is_density_matrix {
-                quest_sys::createDensityQureg(number_qubits as ::std::os::raw::c_int, quest_env)
+                quest_sys::createDensityQureg(number_qubits as ::std::os::raw::c_int)
             } else {
-                quest_sys::createQureg(number_qubits as ::std::os::raw::c_int, quest_env)
+                quest_sys::createQureg(number_qubits as ::std::os::raw::c_int)
             };
             Qureg {
                 quest_env,
@@ -66,7 +66,7 @@ impl Qureg {
 
     /// Returns the number of qubits in the qureg.
     pub fn number_qubits(&self) -> u32 {
-        self.quest_qureg.numQubitsRepresented as u32
+        self.quest_qureg.numQubits as u32
     }
 
     /// Returns probability amplitudes for each state in the quantum register.
@@ -83,28 +83,16 @@ impl Qureg {
             for index in 0..dimension {
                 let density_index = index + index * dimension;
                 unsafe {
-                    let real_amp = *self
-                        .quest_qureg
-                        .stateVec
-                        .real
-                        .wrapping_add(density_index.try_into().expect("Indexing error"));
+                    let real_amp =
+                        quest_sys::getQuregAmp(self.quest_qureg, density_index as i64).re;
                     probabilites.push(real_amp);
                 };
             }
         } else {
             for index in 0..dimension {
                 unsafe {
-                    let real_amp = *self
-                        .quest_qureg
-                        .stateVec
-                        .real
-                        .wrapping_add(index.try_into().expect("Indexing error"));
-                    let imag_amp = *self
-                        .quest_qureg
-                        .stateVec
-                        .imag
-                        .wrapping_add(index.try_into().expect("Indexing error"));
-                    probabilites.push(real_amp * real_amp + imag_amp * imag_amp);
+                    let comp_amp = quest_sys::getQuregAmp(self.quest_qureg, index as i64);
+                    probabilites.push(comp_amp.re * comp_amp.re + comp_amp.im * comp_amp.im);
                 };
             }
         }
@@ -127,18 +115,9 @@ impl Qureg {
         } else {
             for i in 0..2_usize.pow(self.number_qubits()) as i64 {
                 unsafe {
-                    let real_amp = *self
-                        .quest_qureg
-                        .stateVec
-                        .real
-                        .wrapping_add(i.try_into().expect("Indexing error"));
-                    let imag_amp = *self
-                        .quest_qureg
-                        .stateVec
-                        .imag
-                        .wrapping_add(i.try_into().expect("Indexing error"));
+                    let comp_amp = quest_sys::getQuregAmp(self.quest_qureg, i);
 
-                    statevector.push(Complex64::new(real_amp, imag_amp))
+                    statevector.push(Complex64::new(comp_amp.re, comp_amp.im))
                 }
             }
         }
@@ -159,18 +138,11 @@ impl Qureg {
                 for column in 0..dimension {
                     let density_index = row + column * dimension;
                     unsafe {
-                        let real_amp = *self
-                            .quest_qureg
-                            .stateVec
-                            .real
-                            .wrapping_add(density_index.try_into().expect("Indexing error"));
-                        let imag_amp = *self
-                            .quest_qureg
-                            .stateVec
-                            .imag
-                            .wrapping_add(density_index.try_into().expect("Indexing error"));
+                        let comp_amp =
+                            quest_sys::getQuregAmp(self.quest_qureg, density_index as i64);
 
-                        density_matrix_flattened_row_major.push(Complex64::new(real_amp, imag_amp))
+                        density_matrix_flattened_row_major
+                            .push(Complex64::new(comp_amp.re, comp_amp.im))
                     }
                 }
             }
@@ -178,29 +150,12 @@ impl Qureg {
             for row in 0..dimension {
                 for column in 0..dimension {
                     let value = unsafe {
-                        let real_amp_row = *self
-                            .quest_qureg
-                            .stateVec
-                            .real
-                            .wrapping_add(row.try_into().expect("Indexing error"));
-                        let imag_amp_row = *self
-                            .quest_qureg
-                            .stateVec
-                            .imag
-                            .wrapping_add(row.try_into().expect("Indexing error"));
-                        let real_amp_column = *self
-                            .quest_qureg
-                            .stateVec
-                            .real
-                            .wrapping_add(column.try_into().expect("Indexing error"));
-                        let imag_amp_column = *self
-                            .quest_qureg
-                            .stateVec
-                            .imag
-                            .wrapping_add(column.try_into().expect("Indexing error"));
+                        let comp_amp_row = quest_sys::getQuregAmp(self.quest_qureg, row as i64);
+                        let comp_amp_column =
+                            quest_sys::getQuregAmp(self.quest_qureg, column as i64);
 
-                        Complex64::new(real_amp_row, imag_amp_row)
-                            * Complex64::new(real_amp_column, imag_amp_column).conj()
+                        Complex64::new(comp_amp_row.re, comp_amp_row.im)
+                            * Complex64::new(comp_amp_column.re, comp_amp_column.im).conj()
                     };
                     density_matrix_flattened_row_major.push(value);
                 }
@@ -213,8 +168,8 @@ impl Qureg {
 impl Drop for Qureg {
     fn drop(&mut self) {
         unsafe {
-            quest_sys::destroyQureg(self.quest_qureg, self.quest_env);
-            quest_sys::finalizeQuESTEnv(self.quest_env);
+            quest_sys::destroyQureg(self.quest_qureg);
+            quest_sys::finalizeQuESTEnv();
         }
     }
 }
@@ -264,12 +219,9 @@ impl ComplexMatrixN {
         let real = value.re;
         let imag = value.im;
         unsafe {
-            let real_pointer = self.complex_matrix.real;
-            let real_row_pointer = *real_pointer.add(row);
-            *real_row_pointer.add(column) = real;
-            let imag_pointer = self.complex_matrix.imag;
-            let imag_row_pointer = *imag_pointer.add(row);
-            *imag_row_pointer.add(column) = imag;
+            let mat_pointer = self.complex_matrix.cpuElems;
+            let mat_row_pointer = *mat_pointer.add(row);
+            *mat_row_pointer.add(column) = quest_sys::qcomp { re: real, im: imag };
         }
         Ok(())
     }
@@ -280,4 +232,12 @@ impl Drop for ComplexMatrixN {
             quest_sys::destroyCompMatr(self.complex_matrix);
         }
     }
+}
+
+pub(crate) fn to_bindgen(c: Complex<f64>) -> quest_sys::__BindgenComplex<f64> {
+    quest_sys::__BindgenComplex { re: c.re, im: c.im }
+}
+
+pub(crate) fn to_bindgen_real(re: f64) -> quest_sys::__BindgenComplex<f64> {
+    quest_sys::__BindgenComplex { re, im: 0.0 }
 }

@@ -12,6 +12,7 @@
 
 use crate::ComplexMatrixN;
 use crate::Qureg;
+use crate::{to_bindgen, to_bindgen_real};
 use roqoqo::operations::*;
 use roqoqo::RoqoqoBackendError;
 
@@ -26,8 +27,14 @@ pub fn execute_generic_single_qubit_operation(
         numQubits: qureg.number_qubits() as i32,
         numRows: 2,
         elems: [
-            [unitary_matrix[(0, 0)], unitary_matrix[(0, 1)]],
-            [unitary_matrix[(1, 0)], unitary_matrix[(1, 1)]],
+            [
+                to_bindgen(unitary_matrix[(0, 0)]),
+                to_bindgen(unitary_matrix[(0, 1)]),
+            ],
+            [
+                to_bindgen(unitary_matrix[(1, 0)]),
+                to_bindgen(unitary_matrix[(1, 1)]),
+            ],
         ],
         // column major version
         // real: [
@@ -116,28 +123,28 @@ pub fn execute_generic_two_qubit_operation(
         // row major version only used for Complex2/4/N intio
         elems: [
             [
-                unitary_matrix[(0, 0)],
-                unitary_matrix[(0, 1)],
-                unitary_matrix[(0, 2)],
-                unitary_matrix[(0, 3)],
+                to_bindgen(unitary_matrix[(0, 0)]),
+                to_bindgen(unitary_matrix[(0, 1)]),
+                to_bindgen(unitary_matrix[(0, 2)]),
+                to_bindgen(unitary_matrix[(0, 3)]),
             ],
             [
-                unitary_matrix[(1, 0)],
-                unitary_matrix[(1, 1)],
-                unitary_matrix[(1, 2)],
-                unitary_matrix[(1, 3)],
+                to_bindgen(unitary_matrix[(1, 0)]),
+                to_bindgen(unitary_matrix[(1, 1)]),
+                to_bindgen(unitary_matrix[(1, 2)]),
+                to_bindgen(unitary_matrix[(1, 3)]),
             ],
             [
-                unitary_matrix[(2, 0)],
-                unitary_matrix[(2, 1)],
-                unitary_matrix[(2, 2)],
-                unitary_matrix[(2, 3)],
+                to_bindgen(unitary_matrix[(2, 0)]),
+                to_bindgen(unitary_matrix[(2, 1)]),
+                to_bindgen(unitary_matrix[(2, 2)]),
+                to_bindgen(unitary_matrix[(2, 3)]),
             ],
             [
-                unitary_matrix[(3, 0)],
-                unitary_matrix[(3, 1)],
-                unitary_matrix[(3, 2)],
-                unitary_matrix[(3, 3)],
+                to_bindgen(unitary_matrix[(3, 0)]),
+                to_bindgen(unitary_matrix[(3, 1)]),
+                to_bindgen(unitary_matrix[(3, 2)]),
+                to_bindgen(unitary_matrix[(3, 3)]),
             ],
         ],
         // column major version
@@ -222,28 +229,28 @@ pub fn execute_generic_single_qubit_noise(
         // Row major version
         elems: [
             [
-                unitary_matrix[(0, 0)],
-                unitary_matrix[(0, 1)],
-                unitary_matrix[(0, 2)],
-                unitary_matrix[(0, 3)],
+                to_bindgen_real(unitary_matrix[(0, 0)]),
+                to_bindgen_real(unitary_matrix[(0, 1)]),
+                to_bindgen_real(unitary_matrix[(0, 2)]),
+                to_bindgen_real(unitary_matrix[(0, 3)]),
             ],
             [
-                unitary_matrix[(1, 0)],
-                unitary_matrix[(1, 1)],
-                unitary_matrix[(1, 2)],
-                unitary_matrix[(1, 3)],
+                to_bindgen_real(unitary_matrix[(1, 0)]),
+                to_bindgen_real(unitary_matrix[(1, 1)]),
+                to_bindgen_real(unitary_matrix[(1, 2)]),
+                to_bindgen_real(unitary_matrix[(1, 3)]),
             ],
             [
-                unitary_matrix[(2, 0)],
-                unitary_matrix[(2, 1)],
-                unitary_matrix[(2, 2)],
-                unitary_matrix[(2, 3)],
+                to_bindgen_real(unitary_matrix[(2, 0)]),
+                to_bindgen_real(unitary_matrix[(2, 1)]),
+                to_bindgen_real(unitary_matrix[(2, 2)]),
+                to_bindgen_real(unitary_matrix[(2, 3)]),
             ],
             [
-                unitary_matrix[(3, 0)],
-                unitary_matrix[(3, 1)],
-                unitary_matrix[(3, 2)],
-                unitary_matrix[(3, 3)],
+                to_bindgen_real(unitary_matrix[(3, 0)]),
+                to_bindgen_real(unitary_matrix[(3, 1)]),
+                to_bindgen_real(unitary_matrix[(3, 2)]),
+                to_bindgen_real(unitary_matrix[(3, 3)]),
             ],
         ],
         // Column major version

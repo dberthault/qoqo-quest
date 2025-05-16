@@ -550,49 +550,42 @@ fn test_statevec_multiplication_quest() {
     for (test_number, density_matrix) in density_matrices.into_iter().enumerate() {
         for unitary_matrix in unitary_matrices.clone().into_iter() {
             let qureg = Qureg::new(1, true);
-            let mut reals: Vec<f64> = density_matrix.iter().map(|x| x.re).collect();
-            let mut imags: Vec<f64> = density_matrix.iter().map(|x| x.im).collect();
             unsafe {
-                quest_sys::initStateFromAmps(
+                quest_sys::initArbitraryPureState(
                     qureg.quest_qureg,
-                    reals.as_mut_ptr(),
-                    imags.as_mut_ptr(),
+                    density_matrix.as_mut_ptr() as *mut quest_sys::qcomp,
                 )
             }
 
-            let complex_matrix = quest_sys::ComplexMatrix4 {
+            let complex_matrix = quest_sys::CompMatr2 {
+                numQubits: 2,
+                numRows: 4,
                 // Row major version
-                real: [
+                elems: [
                     [
-                        unitary_matrix[(0, 0)].re,
-                        unitary_matrix[(0, 1)].re,
-                        unitary_matrix[(0, 2)].re,
-                        unitary_matrix[(0, 3)].re,
+                        to_bindgen(unitary_matrix[(0, 0)]),
+                        to_bindgen(unitary_matrix[(0, 1)]),
+                        to_bindgen(unitary_matrix[(0, 2)]),
+                        to_bindgen(unitary_matrix[(0, 3)]),
                     ],
                     [
-                        unitary_matrix[(1, 0)].re,
-                        unitary_matrix[(1, 1)].re,
-                        unitary_matrix[(1, 2)].re,
-                        unitary_matrix[(1, 3)].re,
+                        to_bindgen(unitary_matrix[(1, 0)]),
+                        to_bindgen(unitary_matrix[(1, 1)]),
+                        to_bindgen(unitary_matrix[(1, 2)]),
+                        to_bindgen(unitary_matrix[(1, 3)]),
                     ],
                     [
-                        unitary_matrix[(2, 0)].re,
-                        unitary_matrix[(2, 1)].re,
-                        unitary_matrix[(2, 2)].re,
-                        unitary_matrix[(2, 3)].re,
+                        to_bindgen(unitary_matrix[(2, 0)]),
+                        to_bindgen(unitary_matrix[(2, 1)]),
+                        to_bindgen(unitary_matrix[(2, 2)]),
+                        to_bindgen(unitary_matrix[(2, 3)]),
                     ],
                     [
-                        unitary_matrix[(3, 0)].re,
-                        unitary_matrix[(3, 1)].re,
-                        unitary_matrix[(3, 2)].re,
-                        unitary_matrix[(3, 3)].re,
+                        to_bindgen(unitary_matrix[(3, 0)]),
+                        to_bindgen(unitary_matrix[(3, 1)]),
+                        to_bindgen(unitary_matrix[(3, 2)]),
+                        to_bindgen(unitary_matrix[(3, 3)]),
                     ],
-                ],
-                imag: [
-                    [0.0, 0.0, 0.0, 0.0],
-                    [0.0, 0.0, 0.0, 0.0],
-                    [0.0, 0.0, 0.0, 0.0],
-                    [0.0, 0.0, 0.0, 0.0],
                 ],
             };
             unsafe {
@@ -603,9 +596,12 @@ fn test_statevec_multiplication_quest() {
                 for column in 0..2 {
                     // QuEST is column major
                     unsafe {
-                        comparison_matrix[(row, column)] =
-                            quest_sys::getDensityAmp(qureg.quest_qureg, column as i64, row as i64)
-                                .real
+                        comparison_matrix[(row, column)] = quest_sys::getDensityQuregAmp(
+                            qureg.quest_qureg,
+                            column as i64,
+                            row as i64,
+                        )
+                        .real
                     }
                 }
             }

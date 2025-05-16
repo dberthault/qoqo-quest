@@ -53,7 +53,7 @@ pub fn execute_pragma_repeated_measurement(
         WeightedIndex::new(&probabilities).map_err(|err| RoqoqoBackendError::GenericError {
             msg: format!("Probabilites from quantum register {:?}", err),
         })?;
-    let mut rng = create_rng(qureg)?;
+    let mut rng = create_rng()?;
     let existing_register = bit_registers
         .get(operation.readout())
         .map(|x| x.to_owned())
@@ -115,7 +115,7 @@ pub fn execute_replaced_repeated_measurement(
         WeightedIndex::new(&probabilities).map_err(|err| RoqoqoBackendError::GenericError {
             msg: format!("Probabilites from quantum register {:?}", err),
         })?;
-    let mut rng = create_rng(qureg)?;
+    let mut rng = create_rng()?;
     let existing_register = bit_registers
         .get(operation.readout())
         .map(|x| x.to_owned())
@@ -172,8 +172,6 @@ pub fn execute_pragma_set_state_vector(
         });
     }
     if qureg.is_density_matrix {
-        let mut reals: Vec<f64> = Vec::new();
-        let mut imags: Vec<f64> = Vec::new();
         // iterate over ket state vector to the left of the matrix product
         // to reconstruct density matrix
         // Variant for row major order
@@ -191,37 +189,20 @@ pub fn execute_pragma_set_state_vector(
         //     );
         // }
         // // Variant for column major order
-        for value_right in statevec.iter() {
-            // create real and imaginary entries for `row` by multiplying with bra form of statevector
-            reals.extend(
-                statevec
-                    .iter()
-                    .map(|value_left| (value_left * value_right.conj()).re),
-            );
-            imags.extend(
-                statevec
-                    .iter()
-                    .map(|value_left| (value_left * value_right.conj()).im),
-            );
-        }
         unsafe {
             quest_sys::initArbitraryPureState(
                 qureg.quest_qureg,
-                reals.as_mut_ptr(),
-                imags.as_mut_ptr(),
+                statevec.clone().as_mut_ptr() as *mut quest_sys::qcomp,
             )
         }
         Ok(())
     } else {
         let startind: i64 = 0;
-        let mut reals: Vec<f64> = statevec.iter().map(|x| x.re).collect();
-        let mut imags: Vec<f64> = statevec.iter().map(|x| x.im).collect();
         unsafe {
             quest_sys::setQuregAmps(
                 qureg.quest_qureg,
                 startind,
-                reals.as_mut_ptr(),
-                imags.as_mut_ptr(),
+                statevec.clone().as_mut_ptr() as *mut quest_sys::qcomp,
                 num_amps,
             )
         }
@@ -251,20 +232,20 @@ pub fn execute_pragma_set_density_matrix(
         // let mut imags: Vec<f64> = density_matrix.iter().map(|x| x.im).collect();
 
         // // Variant for column major order (transpose ndarray default row major)
-        let mut reals: Vec<f64> = density_matrix.t().iter().map(|x| x.re).collect();
-        let mut imags: Vec<f64> = density_matrix.t().iter().map(|x| x.im).collect();
         let start_row: ::std::os::raw::c_longlong = 0;
         let start_column: ::std::os::raw::c_longlong = 0;
-        let number_amplitudes: ::std::os::raw::c_longlong =
-            imags.len() as ::std::os::raw::c_longlong;
+        let number_rows: ::std::os::raw::c_longlong =
+            density_matrix.shape()[0] as ::std::os::raw::c_longlong;
+        let number_column: ::std::os::raw::c_longlong =
+            density_matrix.shape()[1] as ::std::os::raw::c_longlong;
         unsafe {
             quest_sys::setDensityQuregAmps(
                 qureg.quest_qureg,
                 start_row,
                 start_column,
-                reals.as_mut_ptr(),
-                imags.as_mut_ptr(),
-                number_amplitudes,
+                density_matrix.clone().as_mut_ptr() as *mut *mut quest_sys::qcomp,
+                number_rows,
+                number_column,
             )
         }
         Ok(())
@@ -304,7 +285,7 @@ pub fn execute_pragma_random_noise(
     operation: &PragmaRandomNoise,
     qureg: &mut Qureg,
 ) -> Result<(), RoqoqoBackendError> {
-    let mut rng = create_rng(qureg)?;
+    let mut rng = create_rng()?;
     let r0 = rng.random_range(0.0..1.0);
     let rates = [
         operation.depolarising_rate().float()? / 4.0,
@@ -446,11 +427,11 @@ pub fn execute_get_pauli_prod(
         .cloned()
         .map(|x| x as i32)
         .collect();
-    let mut paulis: Vec<u32> = op
+    let paulis: Vec<i8> = op
         .qubit_paulis()
         .values()
         .cloned()
-        .map(|x| x as u32)
+        .map(|x| x as i8)
         .collect();
 
     let pp = if !op.circuit().is_empty() {
@@ -470,11 +451,7 @@ pub fn execute_get_pauli_prod(
         unsafe {
             let pp = quest_sys::calcExpecPauliStr(
                 workspace.quest_qureg,
-                quest_sys::getPauliStr(
-                    paulis.as_mut_ptr(),
-                    qubits.as_mut_ptr(),
-                    qubits.len() as i32,
-                ),
+                quest_sys::getPauliStr(paulis.as_ptr(), qubits.as_mut_ptr(), qubits.len() as i32),
             );
             drop(workspace);
             drop(workspace_pp);
@@ -484,11 +461,7 @@ pub fn execute_get_pauli_prod(
         unsafe {
             let pp = quest_sys::calcExpecPauliStr(
                 qureg.quest_qureg,
-                quest_sys::getPauliStr(
-                    paulis.as_mut_ptr(),
-                    qubits.as_mut_ptr(),
-                    qubits.len() as i32,
-                ),
+                quest_sys::getPauliStr(paulis.as_ptr(), qubits.as_mut_ptr(), qubits.len() as i32),
             );
             drop(workspace_pp);
             pp
@@ -612,13 +585,14 @@ fn sanitize_probabilities(probabilities: &mut Vec<f64>) -> Result<(), RoqoqoBack
     Ok(())
 }
 
-fn create_rng(qureg: &mut Qureg) -> Result<StdRng, RoqoqoBackendError> {
-    if qureg.quest_env.numSeeds != 0 {
+fn create_rng() -> Result<StdRng, RoqoqoBackendError> {
+    let num_seeds = unsafe { quest_sys::getNumSeeds() };
+    if num_seeds != 0 {
         let seeds = unsafe {
-            std::slice::from_raw_parts_mut(
-                qureg.quest_env.seeds as *mut std::os::raw::c_ulong,
-                qureg.quest_env.numSeeds as usize,
-            )
+            let mut seeds_vec = vec![0; num_seeds as usize];
+            let seeds_ptr = seeds_vec.as_mut_ptr() as *mut u32;
+            quest_sys::getSeeds(seeds_ptr);
+            std::slice::from_raw_parts_mut(seeds_ptr, num_seeds as usize)
         };
 
         let mut bytes: Vec<u8> = seeds.iter().flat_map(|seed| seed.to_le_bytes()).collect();

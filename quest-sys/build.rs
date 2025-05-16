@@ -56,7 +56,9 @@ fn main() {
         .allowlist_function("multiQubitUnitary")
         .allowlist_function("measure")
         .allowlist_function("statevec_twoQubitUnitary")
-        .allowlist_function("calc.*");
+        .allowlist_function("calc.*")
+        .allowlist_function("finalizeQuESTEnv")
+        .allowlist_function("syncQuregFromGpu");
 
     #[cfg(feature = "rebuild")]
     let bindings = builder

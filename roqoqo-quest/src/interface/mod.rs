@@ -10,8 +10,7 @@
 // express or implied. See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::Qureg;
-use crate::Vector;
+use crate::{to_bindgen, Qureg};
 use num_complex::Complex64;
 use roqoqo::operations::*;
 use roqoqo::registers::{BitOutputRegister, BitRegister, ComplexRegister, FloatRegister};
@@ -504,8 +503,14 @@ pub fn call_operation_with_device(
                 numRows: 2,
                 // row major version only used for Complex2/4/N intio
                 elems: [
-                    [unitary_matrix[(0, 0)], unitary_matrix[(0, 1)]],
-                    [unitary_matrix[(1, 0)], unitary_matrix[(1, 1)]],
+                    [
+                        to_bindgen(unitary_matrix[(0, 0)]),
+                        to_bindgen(unitary_matrix[(0, 1)]),
+                    ],
+                    [
+                        to_bindgen(unitary_matrix[(1, 0)]),
+                        to_bindgen(unitary_matrix[(1, 1)]),
+                    ],
                 ],
             };
             unsafe {

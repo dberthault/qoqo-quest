@@ -235,7 +235,7 @@ impl Backend {
         if let Some(mut random_seed) = self.random_seed.clone() {
             unsafe {
                 quest_sys::setSeeds(
-                    random_seed.as_mut_ptr() as *mut std::os::raw::c_ulong,
+                    random_seed.as_mut_ptr() as *mut std::os::raw::c_uint,
                     random_seed.len() as i32,
                 );
             };
